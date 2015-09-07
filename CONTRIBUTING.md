@@ -15,19 +15,47 @@ section.
 * Use of the singular form in module name (or use "multi"),
   except when compound of module name or object Odoo
   that is already in the plural (i.e. mrp_operations_....).
-* Use the [description template](https://github.com/OCA/maintainer-tools/tree/master/template/module)
+* Use the [description template](https://github.com/OCA/maintainer-tools/tree/master/template/module) but remove sections with no meaningful content.
+* In the `__openerp__.py`  manifest file:
+  * Avoid empty keys
+  * Make sure it has the `license` key
+  * Make sure the text `,Odoo Community Association (OCA)` is appended
+    to the `author` text.
+
+### Version numbers
+
+The version number in the module manifest should be the Odoo major
+version (e.g. `8.0`) followed by the module `x.y.z` version numbers.
+For example: `8.0.1.0.0` is expected for the first release of an 8.0
+module.
+
+The `x.y.z` version numbers follow the semantics `breaking.feature.fix`:
+
+  * `x` increments when the data model or the views had significant
+    changes. Data migration might be needed, or depending modules might
+    be affected.
+  * `y` increments when non-breaking new features are added. A module
+    upgrade will probably be needed.
+  * `z` increments when bugfixes were made. Usually a server restart
+    is needed for the fixes to be made available.
+
+If applicable, breaking changes are expected to include instructions
+or scripts to perform migration on current installations.
+
 
 ### Directories
 
 A module is organised in a few directory:
 
+* `controllers/`: contains controllers (http routes)
 * `data/`: data xml
 * `demo/`: demo xml
 * `models/`: models definition
-* `controllers/`: contains controllers (http routes)
-* `views/`: contains the views and templates
+* `report/`: reporting models (BI/analysis), Webkit/RML print report templates
 * `static/`: contains the web assets, separated into `css/`, `js/`, `img/`,
   `lib/`, ...
+* `views/`: contains the views and templates, and QWeb report print templates
+* `wizards/`: wizard model and views
 
 ### File naming
 
@@ -40,10 +68,10 @@ views/res_partner.xml.
 For model named `<main_model>` the following files may be created:
 
 * `models/<main_model>.py`
-* `views/<main_model>.xml`
-* `templates/<main_model>.xml`
 * `data/<main_model>.xml`
 * `demo/<main_model>.xml`
+* `templates/<main_model>.xml`
+* `views/<main_model>.xml`
 
 For `controller`, the only file should be named `main.py`.
 
@@ -69,6 +97,13 @@ addons/<my_module_name>/
 |   |-- __init__.py
 |   |-- <main_model>.py
 |   `-- <inherited_model>.py
+|-- report/
+|   |-- __init__.py
+|   |-- report.xml
+|   |-- <bi_reporting_model>.py
+|   |-- report_<rml_report_name>.rml
+|   |-- report_<rml_report_name>.py
+|   |-- <webkit_report_name>.mako
 |-- security/
 |   |-- ir.model.access.csv
 |   `-- <main_model>_security.xml
@@ -90,9 +125,14 @@ addons/<my_module_name>/
 |-- views/
 |   |-- <main_model>.xml
 |   `-- <inherited_main_model>_views.xml
-`-- templates/
-    |-- <main_model>.xml
-    `-- <inherited_main_model>.xml
+|   |-- report_<qweb_report>.xml
+|-- templates/
+|   |-- <main_model>.xml
+|   `-- <inherited_main_model>.xml
+`-- wizards/
+    |-- __init__.py
+    |-- <wizard_model>.py
+    `-- <wizard_model>.xml
 ```
 
 Filename should only use only `[a-z0-9_]`
@@ -114,6 +154,8 @@ When declaring a record in XML,
   action/menu/views, the convention may not be applicable.
 * Use naming convention defined at the next point
 * The tag `<data>` is only used to set not-updatable data with `noupdate=1`
+* Do not prefix the xmlid by the current module's name (`<record id="view_id"...`, not `<record id="current_module.view_id"...`)
+
 
 ```xml
 <record id="view_id" model="ir.ui.view">
@@ -128,6 +170,20 @@ When declaring a record in XML,
     </field>
 </record>
 ```
+
+### Records
+
+* For records of model `ir.filters` use explicit `user_id` field.
+
+```xml
+<record id="filter_id" model="ir.filters">
+    <field name="name">Filter name</field>
+    <field name="model_id">filter.model</field>
+    <field name="user_id" eval="False"/>
+</record>
+```
+
+More info [here](https://github.com/odoo/odoo/pull/8218)
 
 ### Naming xml_id
 
@@ -205,12 +261,58 @@ name.
 </record>
 ```
 
+### External dependencies
+
+#### `__openerp__.py`
+If your module use extras dependencies of python or binaries you should add to `__openerp__py` file the section `external_dependencies`.
+
+```python
+{
+    'name': 'Example Module',
+    ...
+    'external_dependencies': {
+        'bin': [
+            'external_dependency_binary_1',
+            'external_dependency_binary_2',
+            ...
+            'external_dependency_binary_N',
+        ],
+        'python': [
+            'external_dependency_python_1',
+            'external_dependency_python_2',
+            ...
+            'external_dependency_python_N',
+        ],
+    },
+    ...
+    'installable': True,
+}
+```
+
+An entry in `bin` needs to be in `PATH` identify with `which external_dependency_binary_N` command.
+
+An entry in `python` needs to be in `PYTHONPATH` identify with `python -c "import external_dependency_python_N"` command.
+
+#### ImportError
+In python files where you use a `import external_dependency_python_N` you will need to add a `try-except` with a debug log.
+
+```python
+try:
+  import external_dependency_python_N
+except ImportError:
+  _logger.debug('Can not `import external_dependency_python_N`.')
+```
+
+#### README
+If your module use extras dependencies of python or binaries, please explain how to install them in the `README.rst` file in the section `Installation`.
+
+
 ## Python
 
 ### PEP8 options
 
 Using the linter flake8 can help to see syntax and semantic warning or error.
-Project Source Code should adhere to PEP8 and PyFlakes standards standards with
+Project Source Code should adhere to PEP8 and PyFlakes standards with
 a few exceptions:
 
 * In `__init__.py` only
@@ -243,6 +345,10 @@ from openerp.addons.web.controllers.main import login_redirect
 # 4: local imports
 from . import utils
 ```
+
+ * Note:
+   * You can use [isort](https://pypi.python.org/pypi/isort/) to auto sort import's.
+   * Install with `pip install isort` and use with `isort myfile.py`.
 
 ### Idioms
 
@@ -305,16 +411,25 @@ class account_invoice(orm.Model):
 ```
 
 #### Variable name :
-* use camelcase for model variable
-* use underscore lowercase notation for common variable.
+* use underscore lowercase notation for common variable (snake_case)
 * since new API works with record or recordset instead of id list, don't suffix
   variable name with `_id` or `_ids` if they do not contain an id or a list of
   ids.
 
 ```python
-ResPartner = self.env['res.partner']
-partners = ResPartner.browse(ids)
-partner_id = partners[0].id
+    ...
+    res_partner = self.env['res.partner']
+    partners = res_partner.browse(ids)
+    partner_id = partners[0].id
+```
+
+* Use underscore uppercase notation for global variables or constants
+```python
+...
+CONSTANT_VAR1 = 'Value'
+...
+class...
+...
 ```
 
 ### Field
@@ -322,6 +437,9 @@ partner_id = partners[0].id
   (example: sale_order_line_ids)
 * `Many2One` fields should have `_id` as suffix
   (example: partner_id, user_id, ...)
+* If the technical name of the field (the variable name) is the same to the string of the label, don't put `string` parameter for new API fields, because it's automatically taken. If your variable name contains "_" in the name, they are converted to spaces when creating the automatic string and each word is capitalized.
+  (example: old api `'name': fields.char('Name', ...)`
+            new api `'name': fields.Char(...)`)
 * Method conventions
     * Compute Field: the compute method pattern is `_compute_<field_name>`
     * Search method: the search method pattern is `_search_<field_name>`
@@ -338,7 +456,7 @@ partner_id = partners[0].id
   pointer directly to the `default` parameter does not allow for inheritance.
 
   ```python
-  a_field(..., default=lambda self: self._default_get)
+  a_field(..., default=lambda self: self._default_get())
   ```
 
 * In a Model attribute order should be
@@ -581,18 +699,25 @@ maintainability in an ecosystem of many smaller modules.
 
 The differences include:
 
-* [Module Structure](#model-structure)
+* [Module Structure](#modules)
     * Using one file per model
     * Separating data and demo data xml folders
     * Not changing xml_ids while inheriting
+    * Add guideline to use external dependencies
+* [XML](#xml-files)
+    * Avoid use current module in xml_id
+    * Use explicit `user_id` field for records of model `ir.filters`
 * [Python](#python)
     * Fuller PEP8 compliance
     * Using relative import for local files
     * More python idioms
     * A way to deal with long comma-separated lines
     * Hints on documentation
-* [Fields](#fields)
+    * Don't use CamelCase for model variable
+    * Use underscore uppercase notation for global variables or constants
+* [Field](#field)
     * A hint for function defaults
+    * Use default label string if is posible.
 * [Tests Section Added](#tests)
 * [Git](#git)
     * No prefixing of commits
