@@ -368,7 +368,7 @@ except ImportError:
 
 ### Idioms
 
-* Each python file should have ``# -*- coding: utf-8 -*-`` as first line
+* Each python file should have ``# coding: utf-8`` or ``# -*- coding: utf-8 -*-`` as first line
 * Prefer `%` over `.format()`, prefer `%(varname)` instead of positional.
   This is better for translation and clarity.
 * Always favor **Readability** over **conciseness** or using the language
@@ -466,6 +466,7 @@ class...
     * Action method: an object action method is prefix with `action_`.
       Its decorator is `@api.multi`, but since it use only one record, add
       `self.ensure_one()` at the beginning of the method.
+    * `@api.one` method: For v8 is recommended use `@api.multi` and avoid use `@api.one`, for compatibility with v9 where is deprecated `@api.one`.
 
 * Default functions should be declared with a lambda call on self. The reason
   for this is so a default function can be inherited. Assigning a function
@@ -685,10 +686,12 @@ It makes sense to be picky in the following cases:
 * Respect of Odoo/community conventions
 * Code design and best practices
 
-
-
 The long description try to explain the **why** not the **what**, the **what**
 can be seen in the diff.
+
+Pull requests can be closed if:
+
+* there is no activity for 6 months
 
 ## Github
 
@@ -724,7 +727,9 @@ The differences include:
     * Avoid use current module in xml_id
     * Use explicit `user_id` field for records of model `ir.filters`
 * [Python](#python)
+    Use Python standards
     * Fuller PEP8 compliance
+    * Use ``# coding: utf-8`` or ``# -*- coding: utf-8 -*-`` in first line
     * Using relative import for local files
     * More python idioms
     * A way to deal with long comma-separated lines

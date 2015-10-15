@@ -27,7 +27,7 @@ OCA_PROJECTS = {
                    ],
     # 'backport': ['OCB',
     #              ],
-    'banking': ['banking',
+    'banking': ['bank-payment',
                 'bank-statement-reconcile',
                 'bank-statement-import',
                 'account-payment',
@@ -63,7 +63,8 @@ OCA_PROJECTS = {
            'hr',
            'department',
            ],
-    'intercompany': ['multi-company'],
+    'connector-odoo2odoo': ['connector-odoo2odoo'],
+    'multi-company': ['multi-company'],
     'l10n-argentina': ['l10n-argentina'],
     'l10n-belgium': ['l10n-belgium'],
     'l10n-brazil': ['l10n-brazil'],
@@ -123,7 +124,7 @@ OCA_PROJECTS = {
     'vertical association': ['vertical-association'],
     'vertical hotel': ['vertical-hotel'],
     'vertical ISP': ['vertical-isp'],
-    'vertical editing': ['vertical-editing'],
+    'vertical edition': ['vertical-edition'],
     'vertical medical': ['vertical-medical'],
     'vertical NGO': ['vertical-ngo',
                      # XXX
@@ -135,12 +136,18 @@ OCA_PROJECTS = {
 
 
 def get_repositories():
-    ignored = set([
+    ignored = {
         'odoo-community.org',
-        'community-data-files',
         'contribute-md-template',
-        'website',
-        ])
+        'maintainer-tools',
+        'maintainer-quality-tools',
+        'odoo-sphinx-autodoc',
+        'openupgradelib',
+        'connector-magento-php-extension',
+        'OCB',
+        'OpenUpgrade',
+        'pylint-odoo',
+    }
     gh = login()
     all_repos = [repo.name for repo in gh.iter_user_repos('OCA')
                  if repo not in ignored]
