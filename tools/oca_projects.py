@@ -24,6 +24,7 @@ OCA_PROJECTS = {
                    'account-invoice-reporting',
                    'account-invoicing',
                    'account-fiscal-rule',
+                   'operating-unit',
                    ],
     # 'backport': ['OCB',
     #              ],
@@ -39,12 +40,14 @@ OCA_PROJECTS = {
     'connector': ['connector',
                   'connector-ecommerce',
                   ],
-    'account edge connector': ['connector-accountedge'],
+    'connector AccountEdge': ['connector-accountedge'],
     'connector LIMS': ['connector-lims'],
     'connector CMIS': ['connector-cmis'],
-    'connector magento': ['connector-magento'],
-    'connector prestashop': ['connector-prestashop'],
-    'connector sage': ['connector-sage-50'],
+    'connector Magento': ['connector-magento'],
+    'connector Prestashop': ['connector-prestashop'],
+    'connector Redmine': ['connector-redmine'],
+    'connector Sage': ['connector-sage'],
+    'connector Salesforce': ['connector-salesforce'],
     'connector WooCommerce': ['connector-woocommerce'],
     'crm sales marketing': ['sale-workflow',
                             'crm',
@@ -72,6 +75,7 @@ OCA_PROJECTS = {
     'l10n-china': ['l10n-china'],
     'l10n-colombia': ['l10n-colombia'],
     'l10n-costa-rica': ['l10n-costa-rica'],
+    'l10n-ecuador': ['l10n-ecuador'],
     'l10n-finland': ['l10n-finland'],
     'l10n-france': ['l10n-france'],
     'l10n-germany': ['l10n-germany'],
@@ -81,10 +85,13 @@ OCA_PROJECTS = {
     'l10n-italy': ['l10n-italy'],
     'l10n-luxemburg': ['l10n-luxemburg'],
     'l10n-mexico': ['l10n-mexico'],
+    'l10n-morocco': ['l10n-morocco'],
     'l10n-netherlands': ['l10n-netherlands'],
     'l10n-norway': ['l10n-norway'],
+    'l10n-peru': ['l10n-peru'],
     'l10n-portugal': ['l10n-portugal'],
     'l10n-romania': ['l10n-romania'],
+    'l10n-slovenia': ['l10n-slovenia'],
     'l10n-spain': ['l10n-spain'],
     'l10n-switzerland': ['l10n-switzerland'],
     'l10n-taiwan': ['l10n-taiwan'],
@@ -115,16 +122,19 @@ OCA_PROJECTS = {
                            'contract',
                            'program',
                            ],
+    'social': ['social'],
     'tools': ['reporting-engine',
               'report-print-send',
               'webkit-tools',
               'server-tools',
               'community-data-files',
+              'webhook',
               ],
     'vertical association': ['vertical-association'],
     'vertical hotel': ['vertical-hotel'],
     'vertical ISP': ['vertical-isp'],
     'vertical edition': ['vertical-edition'],
+    'vertical education': ['vertical-education'],
     'vertical medical': ['vertical-medical'],
     'vertical NGO': ['vertical-ngo',
                      # XXX
@@ -150,7 +160,7 @@ def get_repositories():
     }
     gh = login()
     all_repos = [repo.name for repo in gh.iter_user_repos('OCA')
-                 if repo not in ignored]
+                 if repo.name not in ignored]
     return all_repos
 
 try:
